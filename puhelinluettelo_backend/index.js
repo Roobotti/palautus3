@@ -1,7 +1,8 @@
+require('dotenv').config()
 const express = require('express')
 var morgan = require('morgan')
 const cors = require('cors')
-
+const mongoose = require('mongoose')
 const app = express()
 morgan.token('req-body', (req, res) => JSON.stringify(req.body))
 
@@ -9,6 +10,20 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :r
 app.use(express.json())
 app.use(express.static('build'))
 app.use(cors())
+
+const url = process.env.MONGODB_URI
+
+mongoose.set('strictQuery', false)
+mongoose.connect(url)
+
+const personSchema = new mongoose.Schema({
+    name: String,
+    number: String,
+    //id: Number
+})
+
+const Person = mongoose.model('Person', personSchema)
+
 
 let persons = [
     {
@@ -34,7 +49,9 @@ let persons = [
   ]
 
 app.get("/api/persons", (req, res) => {
-    res.send(persons)
+    Person.find({}).then(persons => {
+      res.json(persons)
+    })
 })
 
 app.get('/api/persons/:id', (req, res) => {
@@ -98,7 +115,7 @@ app.get("/info", (req, res) => {
   res.send(txt)
 })
 
-const PORT = process.env.port || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
