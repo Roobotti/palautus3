@@ -32,10 +32,10 @@ app.get('/api/persons/:id', (req, res, next) => {
   Person.findById(req.params.id)
     .then(person => {
       if (person) {
-        response.json(person)
+        res.json(person)
       } 
       else {
-        response.status(404).end()
+        res.status(404).end()
       }
     })
     .catch(error => next(error))
