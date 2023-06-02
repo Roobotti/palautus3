@@ -29,7 +29,7 @@ app.get("/api/persons", (req, res) => {
 })
 
 app.get('/api/persons/:id', (req, res, next) => {
-  NodeIterator.findById(req.params.id)
+  Person.findById(req.params.id)
     .then(person => {
       if (person) {
         response.json(person)
