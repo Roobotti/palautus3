@@ -53,49 +53,33 @@ const generateId = () => {
   return Math.floor(Math.random() * 10000)
 }
 
-app.post('/api/persons', (req, res) => {
-  const body = req.body
-
-  if (!body.name) {
-    return res.status(400).json({ 
-      error: 'name missing' 
-    })
-  }
-
-  if (!body.number) {
-    return res.status(400).json({ 
-      error: 'number missing' 
-    })
-  }
-
+app.post('/api/persons', (req, res, next) => {
+  const {name, number} = req.body
+  
   const person = new Person({
     id: generateId(),
-    name: body.name,
-    number: body.number,
+    name: name,
+    number: number,
   })
 
-  person.save()
-    .then(savedPerson => {
-    res.json(savedPerson)
-  })
-    .catch(error =>{
-      return express.response.status(400).json({
-        error: "name must be unique"
-      })
-    })
+  person.save(
+    {name, number}, 
+    { new: true, runValidators: true, context: 'query'} 
+    )
+    .then(savedPerson => res.json(savedPerson))
+    .catch(error => next(error))
 })
 
-app.put("/api/persons/:id", (request, response, next) => {
-  const body = request.body;
+app.put("/api/persons/:id", (req, res, next) => {
+  const {name, number} = req.body;
 
-  const person = {
-    name: body.name,
-    number: body.number
-  }
-
-  Person.findByIdAndUpdate(request.params.id, person, { new: true })
+  Person.findByIdAndUpdate(
+    req.params.id,
+    { name, number},
+    { new: true, runValidators: true, context: 'query' }
+  )
     .then(updatedPerson => {
-      response.json(updatedPerson);
+      res.json(updatedPerson);
     })
     .catch(error => next(error));
 })
@@ -121,7 +105,12 @@ const errorHandler = (error, request, response, next) => {
 
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id' })
+  } else if (error.name === 'ValidationError') { 
+    return response.status(400).json(
+      {error: error.message 
+      })
   }
+
   next(error)
 }
 app.use(errorHandler)
