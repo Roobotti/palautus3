@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "\"\""
+    "test": "\"\"",
+    "lint": "eslint ."
   },
   "author": "\"Roope Niemi\"",
   "license": "ISC",
@@ -18,6 +19,7 @@
     "morgan": "^1.10.0"
   },
   "devDependencies": {
+    "eslint": "^8.42.0",
     "nodemon": "^2.0.22"
   }
 }

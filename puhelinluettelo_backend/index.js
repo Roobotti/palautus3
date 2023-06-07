@@ -5,13 +5,13 @@ const cors = require('cors')
 
 const app = express()
 const Person = require('./models/person')
-morgan.token('req-body', (req, res) => JSON.stringify(req.body))
+morgan.token('req-body', (req) => JSON.stringify(req.body))
 
-const requestLogger = (request, response, next) => {
-  console.log("Method:", request.method)
-  console.log("Path:  ", request.path)
-  console.log("Body:  ", request.body)
-  console.log("---")
+const requestLogger = (request, next) => {
+  console.log('Method:', request.method)
+  console.log('Path:  ', request.path)
+  console.log('Body:  ', request.body)
+  console.log('---')
   next()
 }
 
@@ -22,10 +22,10 @@ app.use(express.static('build'))
 app.use(cors())
 
 
-app.get("/api/persons", (req, res) => {
-    Person.find({}).then(persons => {
-      res.json(persons)
-    })
+app.get('/api/persons', (req, res) => {
+  Person.find({}).then(persons => {
+    res.json(persons)
+  })
 })
 
 app.get('/api/persons/:id', (req, res, next) => {
@@ -33,20 +33,20 @@ app.get('/api/persons/:id', (req, res, next) => {
     .then(person => {
       if (person) {
         res.json(person)
-      } 
+      }
       else {
         res.status(404).end()
       }
     })
-    .catch(error => next(error))
+    .catch( error => next(error) )
 })
 
-app.delete('/api/persons/:id', (req, res) => {
+app.delete('/api/persons/:id', (req, res, next) => {
   Person.findByIdAndRemove(req.params.id)
-    .then(result => {
+    .then(() => {
       res.status(204).end()
     })
-    .catch(error => next(error))
+    .catch( error => next(error) )
 })
 
 const generateId = () => {
@@ -54,8 +54,8 @@ const generateId = () => {
 }
 
 app.post('/api/persons', (req, res, next) => {
-  const {name, number} = req.body
-  
+  const { name, number } = req.body
+
   const person = new Person({
     id: generateId(),
     name: name,
@@ -63,37 +63,37 @@ app.post('/api/persons', (req, res, next) => {
   })
 
   person.save(
-    {name, number}, 
-    { new: true, runValidators: true, context: 'query'} 
-    )
+    { name, number },
+    { new: true, runValidators: true, context: 'query' }
+  )
     .then(savedPerson => res.json(savedPerson))
     .catch(error => next(error))
 })
 
-app.put("/api/persons/:id", (req, res, next) => {
-  const {name, number} = req.body;
+app.put('/api/persons/:id', (req, res, next) => {
+  const { name, number } = req.body
 
   Person.findByIdAndUpdate(
     req.params.id,
-    { name, number},
+    { name, number },
     { new: true, runValidators: true, context: 'query' }
   )
     .then(updatedPerson => {
-      res.json(updatedPerson);
+      res.json(updatedPerson)
     })
-    .catch(error => next(error));
+    .catch(error => next(error))
 })
 
-app.get("/info", (req, res) => {
+app.get('/info', (req, res) => {
   Person.find({}).then(persons => {
-    
-  const txt = 
-    `<div>
-      <p>Phonebook has info for ${persons.length} people</p>\
-      <p>${new Date()}</p>
-    </div>`
 
-  res.send(txt)
+    const txt =
+      `<div>
+        <p>Phonebook has info for ${persons.length} people</p>\
+        <p>${new Date()}</p>
+      </div>`
+
+    res.send(txt)
   })
 })
 
@@ -105,10 +105,10 @@ const errorHandler = (error, request, response, next) => {
 
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id' })
-  } else if (error.name === 'ValidationError') { 
+  } else if (error.name === 'ValidationError') {
     return response.status(400).json(
-      {error: error.message 
-      })
+      { error: error.message }
+    )
   }
 
   next(error)
@@ -117,5 +117,5 @@ app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`)
+  console.log(`Server running on port ${PORT}`)
 })
