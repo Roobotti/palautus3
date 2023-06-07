@@ -7,7 +7,7 @@ const app = express()
 const Person = require('./models/person')
 morgan.token('req-body', (req) => JSON.stringify(req.body))
 
-const requestLogger = (request, next) => {
+const requestLogger = (request, response, next) => {
   console.log('Method:', request.method)
   console.log('Path:  ', request.path)
   console.log('Body:  ', request.body)
